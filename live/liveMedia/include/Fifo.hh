@@ -3,11 +3,12 @@
 
 class Fifo {
 public:
-	void open();
-	void close();
+	void open_fd();
+	void close_fd();
+	void close_fd(int fd);
 private:
-	int fifo_fd = 0;
-}
+	int fifo_fd;
+};
 
 #endif
 

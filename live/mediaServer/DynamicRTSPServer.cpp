@@ -235,8 +235,9 @@ static ServerMediaSession* createNewSMS(UsageEnvironment& env,
       sms->addSubsession(smss);
     }
   }else if(strcmp(extension, ".xxx") == 0) { // by add yzh 
-    OutPacketBuffer::maxSize = 200000;
+    OutPacketBuffer::maxSize = 100000;
     NEW_SMS("H.264 Video xxx");
+    printf("------H.264 Video xxx------\n");
     sms->addSubsession(H264LiveVideoServerMediaSubssion::createNew(env, fileName, reuseSource));
   }
 

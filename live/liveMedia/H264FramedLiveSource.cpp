@@ -3,6 +3,7 @@
 */
 
 #include "H264FramedLiveSource.hh"
+#include "Fifo.hh"
 #include <stdio.h>
 #include <stdint.h>
 #include <unistd.h>
@@ -92,15 +93,18 @@ H264FramedLiveSource::~H264FramedLiveSource()
         mem = NULL;
     }
     if(fd > 0){
-        fifo->close(fd);
+        fifo->close_fd(fd);
     }
+    
+    delete fifo;
+    fifo = NULL;
     //fclose(fp);
 }
 
 
 void H264FramedLiveSource::doGetNextFrame()
 {
-    fFrameSize = 200000;
+    fFrameSize = 0;
     //不知道为什么，多几帧一起发送效果会好一点点，也许是心理作怪
 /*
     for(int i = 0; i < 2; i++)
@@ -115,12 +119,13 @@ void H264FramedLiveSource::doGetNextFrame()
 
     memset(mem,0,BUFF_SIZE);
 	if((real_read=read(fd, &length, 4)) > 0){
-		printf("Read from fifo length: '%d'\n", length);
+		printf("Read from fifo length = %d\n", length);
 	}
 		
     if ((real_read = read(fd, mem, length))>0) {
 	    //strncpy(buf,buff,10);
         //printf("Read from fifo buf: '%s'\n",buf);
+        printf("Read from fifo real_read = %d\n", real_read);
     }
         
     fFrameSize = length;
