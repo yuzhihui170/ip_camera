@@ -55,7 +55,7 @@ test.__264
 test.__xxx
 live/SI/*
 
-camera_x264/SI
+camera_x264/SI/
 camera_x264/SI/camera_h264.IAB
 camera_x264/SI/camera_h264.IAD
 camera_x264/SI/camera_h264.IAB
