@@ -4,7 +4,7 @@ CFLAGS = -g
 DEP_LIBS = -L.
 LIBS = -lpthread -lm -ldl
 #OBJS = test.o 
-OBJS = main.o h264encoder.o video_capture.o
+OBJS = main.o h264encoder.o video_capture.o yuv.o
 all: $(OBJS) h264encoder.h video_capture.h
 	$(CC) $(CFLAGS) $(OBJS) libx264.a $(LIBS) -o $(APP)
 

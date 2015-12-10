@@ -6,6 +6,9 @@
 #include <malloc.h>
 #include "video_capture.h"
 
+// 采集100帧的数据
+#define FRAME 100 
+
 void* capture_encode_thread(void *arg) {
 	int count = 1;
 	struct camera *cam;
@@ -13,7 +16,7 @@ void* capture_encode_thread(void *arg) {
 	cam = (struct camera *)arg;
 	for (;;) {
 		printf("\n\n-->this is the %dth frame\n", count);
-		if (count++ >= 50) { // 采集100帧的数据
+		if (count++ >= FRAME) { 
 			printf("------need to exit from thread------- \n");
 			break;
 		}

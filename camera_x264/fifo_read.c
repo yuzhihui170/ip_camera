@@ -7,8 +7,9 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-#define FIFO "myfifo"
+#define FIFO "/tmp/myfifo"
 #define BUFF_SIZE 200000
+
 
 int main() {
     char buff[BUFF_SIZE];

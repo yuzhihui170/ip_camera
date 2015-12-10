@@ -17,6 +17,7 @@
 #include <dirent.h>
 #include "video_capture.h"
 #include "h264encoder.h"
+#include "yuv.h"
 
 #define CLEAR(x) memset (&(x), 0, sizeof (x))
 
@@ -24,12 +25,11 @@ typedef unsigned char uint8_t;
 
 static char *dev_name = "/dev/video0";
 
-char h264_file_name[100] = "zgy.h264\0";
-FILE *h264_fp;
+FILE* yuv422_fp;
+FILE* yuv420_fp;
 uint8_t *h264_buf;
+uint8_t *yuv420_buf;
 
-char yuv_file_name[100] = "zgy.yuv\0";
-FILE *yuv_fp;
 
 unsigned int n_buffers = 0;
 DIR *dirp;
@@ -81,43 +81,40 @@ void close_camera(struct camera *cam) {
 }
 
 void init_file() {
-	h264_fp = fopen(h264_file_name, "wa+");
-	yuv_fp = fopen(yuv_file_name, "wa+");
+	yuv422_fp = fopen("yzh.yuv422", "wa+");
+	yuv420_fp = fopen("yzh.yuv420", "wa+");
 }
 
 void close_file() {
-	fclose(h264_fp);
-	fclose(yuv_fp);
+	fclose(yuv422_fp);
+	fclose(yuv420_fp);
 }
 
 void init_encoder(struct camera *cam) {
 	compress_begin(&en, cam->width, cam->height);
-	h264_buf = (uint8_t *) malloc(sizeof(uint8_t) * cam->width * cam->height * 3); // yuv422设置缓冲区
-	//h264_buf = (uint8_t *) malloc(sizeof(uint8_t) * cam->width * cam->height * 3 / 2); // yuv420设置缓冲区
+	yuv420_buf = (uint8_t *) malloc(sizeof(uint8_t) * cam->width * cam->height * 3 / 2);
+	if(NULL == yuv420_buf) {
+		printf("malloc error\n");
+	}
 }
 
 void close_encoder() {
 	compress_end(&en);
-	free(h264_buf);
+	//free(h264_buf);
+	//free(yuv420_buf);
 }
 
-void encode_frame(uint8_t *yuv_frame, size_t yuv_length) {
+void encode_frame(const struct camera *cam, uint8_t *yuv_frame, size_t yuv_length) {
 	int h264_length = 0;
-
-	//这里有一个问题，通过测试发现前6帧都是0，所以这里我跳过了为0的帧
-	if (yuv_frame[0] == '\0')
-		return;
 	
 	//写yuv文件
-	//fwrite(yuv_frame, (en.param->i_width * en.param->i_height * 3 / 2), 1, yuv_fp); //yuv420
-	fwrite(yuv_frame, (en.param->i_width * en.param->i_height * 2), 1, yuv_fp); //yuv422
+	fwrite(yuv_frame, (cam->width * cam->height * 2), 1, yuv422_fp); //yuv422
 
-	//h264_length = compress_frame(&en, -1, yuv_frame, h264_buf);
-	h264_length = compress_frame(&en, -1, yuv_frame, h264_fp);
-	//if (h264_length > 0) {
-		//写h264文件
-	//	fwrite(h264_buf, h264_length, 1, h264_fp);
-	//}
+	//将YUV422转换为YUV420
+	YUV422To420(yuv_frame, yuv420_buf, cam->width, cam->height);
+	fwrite(yuv420_buf, (cam->width * cam->height * 3 / 2), 1, yuv420_fp); //yuv420
+
+	//h264_length = compress_frame(&en, -1, yuv420_buf, NULL);
 }
 
 int read_and_encode_frame(struct camera *cam) {
@@ -142,8 +139,8 @@ int read_and_encode_frame(struct camera *cam) {
 			errno_exit("VIDIOC_DQBUF");
 		}
 	}
-	fprintf(stdout, "[%s|%s|%d] +++ type = %d length = %d\n",__FILE__, __FUNCTION__, __LINE__,buf.type, buf.length);
-	encode_frame(cam->buffers[buf.index].start, buf.length);
+	//fprintf(stdout, "[%s|%s|%d] +++ type = %d length = %d\n",__FILE__, __FUNCTION__, __LINE__,buf.type, buf.length);
+	encode_frame(cam, cam->buffers[buf.index].start, buf.length);
 
 	if (-1 == xioctl(cam->fd, VIDIOC_QBUF, &buf))
 		errno_exit("VIDIOC_QBUF");
