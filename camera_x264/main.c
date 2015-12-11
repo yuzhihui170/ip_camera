@@ -7,7 +7,7 @@
 #include "video_capture.h"
 
 // 采集100帧的数据
-#define FRAME 100 
+#define FRAME 500 
 
 void* capture_encode_thread(void *arg) {
 	int count = 1;
@@ -51,6 +51,9 @@ void* capture_encode_thread(void *arg) {
 			break;
 		}
 	}
+	v4l2_close(cam);
+	free(cam);
+	cam = NULL;
 }
 
 int main(int argc, char **argv) {
@@ -77,8 +80,5 @@ int main(int argc, char **argv) {
 	}
 	pthread_join(mythread, NULL);
 	printf("-----------end main------------\n");
-	v4l2_close(cam);
-	free(cam);
-	cam = NULL;
 	return 0;
 }

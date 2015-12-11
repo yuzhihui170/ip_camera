@@ -138,7 +138,7 @@ static ServerMediaSession* createNewSMS(UsageEnvironment& env,
   } else if (strcmp(extension, ".264") == 0) {
     // Assumed to be a H.264 Video Elementary Stream file:
     NEW_SMS("H.264 Video");
-    OutPacketBuffer::maxSize = 100000; // allow for some possibly large H.264 frames
+    OutPacketBuffer::maxSize = 200000; //100000; // allow for some possibly large H.264 frames
     sms->addSubsession(H264VideoFileServerMediaSubsession::createNew(env, fileName, reuseSource));
   } else if (strcmp(extension, ".265") == 0) {
     // Assumed to be a H.265 Video Elementary Stream file:
@@ -235,7 +235,7 @@ static ServerMediaSession* createNewSMS(UsageEnvironment& env,
       sms->addSubsession(smss);
     }
   }else if(strcmp(extension, ".xxx") == 0) { // by add yzh 
-    OutPacketBuffer::maxSize = 100000;
+    OutPacketBuffer::maxSize = 200000;
     NEW_SMS("H.264 Video xxx");
     printf("------H.264 Video xxx------\n");
     sms->addSubsession(H264LiveVideoServerMediaSubssion::createNew(env, fileName, reuseSource));

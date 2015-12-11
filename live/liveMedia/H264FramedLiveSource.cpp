@@ -26,6 +26,8 @@ extern class Cameras Camera; //in mainRTSPServer.cpp
 #define FIFO "/tmp/myfifo"
 #define BUFF_SIZE 200000
 
+#define END_FLAG 0x0FFF0001 //摄像头结束传输的标志
+
 
 #define CLEAR(x) (memset((&x),0,sizeof(x)))
 unsigned char *mem = NULL;
@@ -67,6 +69,8 @@ H264FramedLiveSource::H264FramedLiveSource(UsageEnvironment& env, char const* fi
         printf("Open fifo error!\n");
         exit(1);
     }
+
+    printf("open fifo\n");
     
     fifo = new Fifo();
     
@@ -127,6 +131,10 @@ void H264FramedLiveSource::doGetNextFrame()
         //printf("Read from fifo buf: '%s'\n",buf);
         printf("Read from fifo real_read = %d\n", real_read);
     }
+
+    if(length == END_FLAG) {
+        return;
+    }
         
     fFrameSize = length;
     if( fFrameSize >  fMaxSize) {
@@ -138,10 +146,9 @@ void H264FramedLiveSource::doGetNextFrame()
 
     if(mem != NULL) {
         memmove((unsigned char*)fTo, mem, fFrameSize);
-        printf("$$$$$$$$$$$$$$$\n");
+        printf("fTo-------------------> remote\n");
     }
-    nextTask() = envir().taskScheduler().scheduleDelayedTask(1000000,
-        (TaskFunc*)FramedSource::afterGetting, this);//表示延迟0秒后再执行 afterGetting 函数
+    nextTask() = envir().taskScheduler().scheduleDelayedTask(0,(TaskFunc*)FramedSource::afterGetting, this);//表示延迟0秒后再执行 afterGetting 函数
     return;
 }
 

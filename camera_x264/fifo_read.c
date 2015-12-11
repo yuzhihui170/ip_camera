@@ -10,6 +10,15 @@
 #define FIFO "/tmp/myfifo"
 #define BUFF_SIZE 200000
 
+/**判断文件是否存在
+   * 返回: -1 不存在; 0 存在*/
+int IsExist(const char *path)
+{
+	if(access(FIFO,F_OK)==-1) {
+		return -1;
+	}
+	return 0;
+}
 
 int main() {
     char buff[BUFF_SIZE];

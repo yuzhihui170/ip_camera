@@ -27,7 +27,6 @@ static char *dev_name = "/dev/video0";
 
 FILE* yuv422_fp;
 FILE* yuv420_fp;
-uint8_t *h264_buf;
 uint8_t *yuv420_buf;
 
 
@@ -76,18 +75,17 @@ int open_camera(struct camera *cam) {
 void close_camera(struct camera *cam) {
 	if (-1 == close(cam->fd))
 		errno_exit("close");
-
 	cam->fd = -1;
 }
 
 void init_file() {
-	yuv422_fp = fopen("yzh.yuv422", "wa+");
-	yuv420_fp = fopen("yzh.yuv420", "wa+");
+	//yuv422_fp = fopen("yzh.yuv422", "wa+");
+	//yuv420_fp = fopen("yzh.yuv420", "wa+");
 }
 
 void close_file() {
-	fclose(yuv422_fp);
-	fclose(yuv420_fp);
+	//fclose(yuv422_fp);
+	//fclose(yuv420_fp);
 }
 
 void init_encoder(struct camera *cam) {
@@ -100,21 +98,23 @@ void init_encoder(struct camera *cam) {
 
 void close_encoder() {
 	compress_end(&en);
-	//free(h264_buf);
-	//free(yuv420_buf);
+    if(yuv420_buf != NULL) {
+		//free(yuv420_buf);
+	}
+	
 }
 
 void encode_frame(const struct camera *cam, uint8_t *yuv_frame, size_t yuv_length) {
-	int h264_length = 0;
+	int ret = -1;
 	
 	//写yuv文件
-	fwrite(yuv_frame, (cam->width * cam->height * 2), 1, yuv422_fp); //yuv422
+	//fwrite(yuv_frame, (cam->width * cam->height * 2), 1, yuv422_fp); //yuv422
 
 	//将YUV422转换为YUV420
 	YUV422To420(yuv_frame, yuv420_buf, cam->width, cam->height);
-	fwrite(yuv420_buf, (cam->width * cam->height * 3 / 2), 1, yuv420_fp); //yuv420
+	//fwrite(yuv420_buf, (cam->width * cam->height * 3 / 2), 1, yuv420_fp); //yuv420
 
-	//h264_length = compress_frame(&en, -1, yuv420_buf, NULL);
+	ret = compress_frame(&en, -1, yuv420_buf, NULL);
 }
 
 int read_and_encode_frame(struct camera *cam) {
